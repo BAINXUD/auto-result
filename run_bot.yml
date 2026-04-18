@@ -1,25 +1,27 @@
-name: Data Collector Bot
+name: Lottery Data Collector
 
 on:
   schedule:
-    - cron: '*/1 * * * *' # প্রতি ১ মিনিট পর পর চলবে (GitHub-এর সর্বনিম্ন লিমিট)
-  workflow_dispatch: # ম্যানুয়ালি রান করার অপশন
+    - cron: '*/1 * * * *'
+  workflow_dispatch:
 
 jobs:
-  build:
+  run-script:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Setup Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
-          node-version: '16'
+          node-version: '18'
 
       - name: Install dependencies
-        run: npm install axios
+        run: npm install
 
-      - name: Run collector script
+      - name: Run collector
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          CHAT_ID: ${{ secrets.CHAT_ID }}
         run: node script.js
-        
