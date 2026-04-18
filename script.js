@@ -6,26 +6,39 @@ const API_URL = 'https://draw.ar-lottery01.com/WinGo/WinGo_30S/GetHistoryIssuePa
 
 async function fetchDataAndSend() {
     try {
+        console.log("Checking API...");
         const response = await axios.get(API_URL);
-        const data = response.data.data.list;
+        
+        // পুরো রেসপন্স চেক করা
+        if (response.data && response.data.data && response.data.data.list) {
+            const data = response.data.data.list;
+            console.log("Data found:", data.issueNumber);
 
-        if (data) {
             const message = `
-🔔 *New Result*
+🔔 *New Result Found!*
 📝 Period: ${data.issueNumber}
 🔢 Number: ${data.number}
 📊 Size: ${data.number >= 5 ? 'Big' : 'Small'}
             `;
 
-            await axios.post(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, {
+            const telegramUrl = `https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`;
+            
+            const res = await axios.post(telegramUrl, {
                 chat_id: CHAT_ID,
                 text: message,
                 parse_mode: 'Markdown'
             });
-            console.log("Success: Data sent to Telegram!");
+
+            if(res.data.ok) {
+                console.log("Message sent to Telegram successfully!");
+            } else {
+                console.log("Telegram API Error:", res.data);
+            }
+        } else {
+            console.log("No data found in API response.");
         }
     } catch (error) {
-        console.error("Error:", error.message);
+        console.error("Error Details:", error.response ? error.response.data : error.message);
     }
 }
 
