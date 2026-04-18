@@ -6,13 +6,20 @@ const API_URL = 'https://draw.ar-lottery01.com/WinGo/WinGo_30S/GetHistoryIssuePa
 
 async function fetchDataAndSend() {
     try {
-        console.log("Checking API...");
-        const response = await axios.get(API_URL);
+        console.log("Checking API with browser headers...");
         
-        // পুরো রেসপন্স চেক করা
+        const response = await axios.get(API_URL, {
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                'Accept': 'application/json, text/plain, */*',
+                'Referer': 'https://draw.ar-lottery01.com/',
+                'Origin': 'https://draw.ar-lottery01.com'
+            }
+        });
+
         if (response.data && response.data.data && response.data.data.list) {
             const data = response.data.data.list;
-            console.log("Data found:", data.issueNumber);
+            console.log("Data found for Period:", data.issueNumber);
 
             const message = `
 🔔 *New Result Found!*
@@ -21,19 +28,26 @@ async function fetchDataAndSend() {
 📊 Size: ${data.number >= 5 ? 'Big' : 'Small'}
             `;
 
-            const telegramUrl = `https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`;
-            
-            const res = await axios.post(telegramUrl, {
+            await axios.post(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, {
                 chat_id: CHAT_ID,
                 text: message,
                 parse_mode: 'Markdown'
             });
 
-            if(res.data.ok) {
-                console.log("Message sent to Telegram successfully!");
-            } else {
-                console.log("Telegram API Error:", res.data);
-            }
+            console.log("Message sent to Telegram!");
+        } else {
+            console.log("Response received but no list data found.");
+        }
+    } catch (error) {
+        if (error.response && error.response.status === 403) {
+            console.log("Error 403: Server is still blocking the bot. They have strong protection.");
+        } else {
+            console.error("Error Details:", error.message);
+        }
+    }
+}
+
+fetchDataAndSend();
         } else {
             console.log("No data found in API response.");
         }
