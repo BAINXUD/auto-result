@@ -10,19 +10,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4 # ভার্সন আপডেট করা হয়েছে
 
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4 # ভার্সন আপডেট করা হয়েছে
         with:
-          node-version: '18'
+          node-version: '20'
 
       - name: Install dependencies
-        run: npm install
+        run: npm install axios # সরাসরি ইনস্টল করে দিচ্ছি যাতে ভুল না হয়
 
       - name: Run collector
         env:
           TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
           CHAT_ID: ${{ secrets.CHAT_ID }}
         run: node script.js
-        
